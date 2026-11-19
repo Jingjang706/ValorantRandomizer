@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>VALORANT Challenge Roulette</title>
+<meta name="description" content="Roll a random VALORANT agent, map, guns and skins. Challenge your squad.">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<style>
+:root{
+  --bg:#F6F4F1;--surface:#FFFFFF;--soft:#EFEDEA;--line:#E2DFDA;--fg:#1B1D21;--muted:#6E6A64;
+  --acc:#E03B4A;--acc-fg:#fff;--acc-soft:#FBE7E8;--ok:#2E8A5B;
+  --duelist:#D4553B;--controller:#6D55C9;--initiator:#1E8C7E;--sentinel:#B5820F;--other:#5D6B82;
+  --shadow:0 1px 2px rgba(0,0,0,.05),0 4px 12px rgba(0,0,0,.04);
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root{
+  --bg:#0F1218;--surface:#171B23;--soft:#1F242E;--line:rgba(255,255,255,.12);--fg:#F2F0EC;--muted:rgba(242,240,236,.66);
+  --acc:#FF4655;--acc-fg:#fff;--acc-soft:rgba(255,70,85,.14);--ok:#72BC8F;
+  --duelist:#FF7A5C;--controller:#A48BFF;--initiator:#3FD0BC;--sentinel:#EBC04A;--other:#93A3BD;
+  --shadow:none;color-scheme:dark}}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.wrap{max-width:1120px;margin:0 auto;padding:24px 24px 48px}
+header{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:24px}
+.headright{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.headbtn{min-height:44px;padding:0 14px;border-radius:8px;border:1px solid var(--line);background:var(--surface);font-weight:650;display:inline-flex;align-items:center;gap:8px}.headbtn:hover{background:var(--soft)}.headbtn svg{width:18px;height:18px}.account-state{font-size:.8rem;color:var(--muted);text-align:right}
+.brand{display:flex;align-items:center;gap:12px}
+.logo{width:40px;height:40px;flex:none}
+h1{margin:0;font-size:1.6rem;line-height:1.1;letter-spacing:.01em;font-weight:800}
+h1 span{color:var(--acc)}
+.tag{margin:2px 0 0;color:var(--muted);font-size:.95rem}
+#status{font-size:.85rem;color:var(--muted);display:flex;align-items:center;gap:8px}
+#status i{width:8px;height:8px;border-radius:50%;background:var(--muted);display:inline-block}
+#status.live i{background:var(--ok)}
+
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow)}
+.controls{padding:16px;display:grid;gap:16px}
+.row{display:flex;gap:12px 24px;flex-wrap:wrap;align-items:center}
+.grp{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.glbl{font-size:.8rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-right:4px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.seg button{min-width:44px;min-height:44px;border:0;background:transparent;font-weight:700;border-left:1px solid var(--line)}
+.seg button:first-child{border-left:0}
+.seg button[aria-pressed="true"]{background:var(--fg);color:var(--bg)}
+.tg{min-height:44px;padding:0 14px;border-radius:8px;border:1px solid var(--line);background:transparent;display:inline-flex;align-items:center;gap:8px;font-size:.95rem}
+.tg::before{content:"";width:16px;height:16px;border-radius:4px;border:1.5px solid var(--muted);flex:none}
+.tg[aria-pressed="true"]{border-color:var(--fg)}
+.tg[aria-pressed="true"]::before{background:var(--acc) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3.5 8.5l3 3 6-7' fill='none' stroke='white' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/12px no-repeat;border-color:var(--acc)}
+select.tg{padding-right:12px;appearance:auto}
+select.tg::before{display:none}
+details.filters summary{cursor:pointer;color:var(--muted);font-size:.9rem;min-height:32px;display:flex;align-items:center;list-style:none;gap:6px}
+details.filters summary::-webkit-details-marker{display:none}
+details.filters summary::before{content:"";width:7px;height:7px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:rotate(-45deg);margin:0 4px 0 2px;transition:transform .15s}
+details.filters[open] summary::before{transform:rotate(45deg)}
+.fbody{display:grid;gap:12px;padding-top:12px}
+.chip{min-height:40px;padding:0 14px;border-radius:999px;border:1px solid var(--line);background:transparent;font-size:.9rem}
+.chip[aria-pressed="true"]{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+.actions{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+.roll{flex:1 1 240px;min-height:56px;border:0;border-radius:8px;background:var(--acc);color:var(--acc-fg);font-size:1.15rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;display:inline-flex;align-items:center;justify-content:center;gap:10px}
+.roll:hover{filter:brightness(1.06)}
+.roll:disabled{opacity:.7;cursor:progress}
+.btn{min-height:56px;padding:0 18px;border-radius:8px;border:1px solid var(--line);background:var(--surface);font-weight:600;display:inline-flex;align-items:center;gap:8px}
+.btn:hover{background:var(--soft)}
+.btn svg,.roll svg{width:20px;height:20px;flex:none}
+
+.results{margin-top:24px;display:grid;gap:16px}
+.banner{position:relative;min-height:150px;border-radius:12px;overflow:hidden;background:#20252e;color:#fff;display:flex;align-items:flex-end;border:1px solid var(--line)}
+.banner img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.banner::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(10,12,16,.86) 0%,rgba(10,12,16,.55) 45%,rgba(10,12,16,.05) 100%)}
+.banner .bi{position:relative;z-index:1;padding:20px 24px;display:flex;align-items:flex-end;justify-content:space-between;width:100%;gap:16px}
+.kick{font-size:.78rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;opacity:.8}
+.mapname{font-size:2.4rem;font-weight:800;line-height:1;letter-spacing:.02em;text-transform:uppercase}
+.mapsub{opacity:.8;font-size:.95rem;margin-top:4px}
+.banner .lock{color:#fff;border-color:rgba(255,255,255,.35);background:rgba(0,0,0,.25)}
+
+.squad{display:grid;gap:16px;grid-template-columns:repeat(3,minmax(0,1fr))}
+.squad.n2,.squad.n4{grid-template-columns:repeat(2,minmax(0,1fr))}
+@media (max-width:1000px){.squad{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.squad.solo{grid-template-columns:1fr}
+.pc{overflow:hidden;display:flex;flex-direction:column}
+.solo .pc{display:grid;grid-template-columns:minmax(260px,380px) 1fr}
+.ag{position:relative;min-height:200px;display:flex;align-items:flex-end;overflow:hidden;color:#fff;background:var(--rc,var(--other))}
+.solo .ag{min-height:100%}
+.ag img.port{position:absolute;right:-12%;top:0;height:135%;width:auto;max-width:none;object-fit:contain;object-position:top}
+.solo .ag img.port{right:auto;left:50%;transform:translateX(-50%);height:118%}
+.ag::after{content:"";position:absolute;inset:0;background:linear-gradient(0deg,rgba(8,10,14,.82) 0%,rgba(8,10,14,.15) 55%,transparent 100%)}
+.ag .ai{position:relative;z-index:1;padding:16px;display:flex;justify-content:space-between;align-items:flex-end;width:100%;gap:12px}
+.pnum{font-size:.75rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;opacity:.85}
+.agname{font-size:1.9rem;font-weight:800;line-height:1.05;text-transform:uppercase;letter-spacing:.02em}
+.role{display:inline-flex;align-items:center;gap:6px;font-size:.9rem;opacity:.92;margin-top:2px}
+.role img{width:16px;height:16px}
+.ag .lock{color:#fff;border-color:rgba(255,255,255,.35);background:rgba(0,0,0,.25)}
+.slots{display:flex;flex-direction:column}
+.slot{display:grid;grid-template-columns:96px 1fr auto;gap:12px;align-items:center;padding:12px 16px;border-top:1px solid var(--line)}
+.solo .slot{grid-template-columns:200px 1fr auto;padding:16px 20px}
+.solo .slot:first-child{border-top:0}
+.thumb{height:56px;display:flex;align-items:center;justify-content:center;background:var(--soft);border-radius:8px;padding:6px}
+.solo .thumb{height:88px;padding:10px}
+.thumb img{max-width:100%;max-height:100%;object-fit:contain}
+.thumb .ph{font-size:.75rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.sl{font-size:.75rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.sn{font-weight:700;line-height:1.25;word-break:break-word}
+.solo .sn{font-size:1.2rem}
+.sm{font-size:.85rem;color:var(--muted)}
+.total{padding:12px 16px;border-top:1px solid var(--line);display:flex;justify-content:space-between;font-size:.9rem;color:var(--muted);margin-top:auto}
+.total b{color:var(--fg)}
+.lock{width:44px;height:44px;border-radius:8px;border:1px solid var(--line);background:transparent;display:inline-flex;align-items:center;justify-content:center;flex:none;color:var(--muted)}
+.lock svg{width:18px;height:18px}
+.lock[aria-pressed="true"]{background:var(--acc)!important;border-color:var(--acc)!important;color:#fff!important}
+.rule{padding:16px 20px;display:flex;align-items:center;gap:16px;border-left:4px solid var(--acc)}
+.rule .rt{flex:1}
+.rule .rn{font-size:1.15rem;font-weight:700;line-height:1.35}
+.rolling .agname,.rolling .sn,.rolling .mapname,.rolling .rn{opacity:.55}
+
+.note{margin-top:32px;color:var(--muted);font-size:.85rem;max-width:760px}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);background:var(--fg);color:var(--bg);padding:12px 18px;border-radius:8px;font-weight:600;opacity:0;pointer-events:none;transition:.2s;z-index:50}
+.toast.on{opacity:1;transform:translateX(-50%)}
+.shared{background:var(--acc-soft);border:1px solid var(--acc);color:var(--fg);border-radius:8px;padding:10px 14px;font-size:.92rem}
+
+dialog{border:1px solid var(--line);border-radius:12px;background:var(--surface);color:var(--fg);padding:0;width:min(760px,calc(100vw - 32px));max-height:min(86vh,820px)}
+dialog::backdrop{background:rgba(0,0,0,.55)}
+.dh{display:flex;justify-content:space-between;align-items:center;padding:16px 20px;border-bottom:1px solid var(--line);gap:12px}
+.dh h2{margin:0;font-size:1.2rem}
+.db{padding:16px 20px;overflow:auto;max-height:calc(min(86vh,820px) - 140px)}
+.df{padding:12px 20px;border-top:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:12px;color:var(--muted);font-size:.9rem}
+.x{width:44px;height:44px;border-radius:8px;border:1px solid var(--line);background:transparent;font-size:1.3rem;line-height:1}
+.dtabs{display:inline-flex;margin-bottom:16px}
+.dtabs button{padding:0 16px}
+.wsel{min-height:44px;border:1px solid var(--line);border-radius:8px;background:var(--bg);padding:0 10px}
+.info{font-size:.9rem;color:var(--muted);margin:0 0 12px}
+.agrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:8px}
+.own{position:relative;border:1px solid var(--line);border-radius:8px;background:var(--soft);padding:8px;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:.85rem;font-weight:600;min-height:44px;text-align:center}
+.own img{width:56px;height:56px;object-fit:contain}
+.own[aria-pressed="true"]{border-color:var(--acc);background:var(--acc-soft)}
+.own[aria-pressed="true"]::after{content:"✓";position:absolute;top:4px;right:6px;color:var(--acc);font-weight:800}
+.own[aria-pressed="false"] img{opacity:.45;filter:grayscale(1)}
+.sgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px}
+.sgrid .own img{width:100%;height:48px}
+.search{width:100%;min-height:44px;border:1px solid var(--line);border-radius:8px;background:var(--bg);padding:0 12px;margin-bottom:12px}
+.srow{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.provider-stack{display:grid;gap:10px}.provider{min-height:48px;width:100%;justify-content:center}.provider:disabled{opacity:.55;cursor:not-allowed;background:var(--soft);color:var(--muted)}.account-box{padding:14px;border:1px solid var(--line);border-radius:8px;background:var(--soft);margin:12px 0}.hist-list{display:grid;gap:10px}.hist-item{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:12px;border:1px solid var(--line);border-radius:8px;background:var(--surface)}.hist-copy{min-width:0}.hist-title{font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.hist-actions{display:flex;gap:8px;flex:none}.hist-actions .btn{min-height:40px;padding:0 12px}.empty-state{padding:28px 16px;border:1px dashed var(--line);border-radius:8px;text-align:center;color:var(--muted)}.danger-link{border:0;background:none;color:var(--acc);font-weight:650;padding:8px 0}
+
+@media (max-width:760px){
+  .headright{width:100%;justify-content:space-between}.account-state{text-align:left}.hist-item{align-items:flex-start;flex-direction:column}.hist-actions{width:100%}.hist-actions .btn{flex:1}
+  .wrap{padding:16px 16px 40px}
+  .solo .pc{grid-template-columns:1fr}
+  .solo .ag{min-height:260px}
+  .solo .slot{grid-template-columns:120px 1fr auto;padding:12px 16px}
+  .solo .thumb{height:60px}
+  .mapname{font-size:1.9rem}
+  .squad{grid-template-columns:1fr}
+  .slot{grid-template-columns:96px 1fr auto}
+  .btn{flex:1 1 auto;justify-content:center}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div class="brand">
+    <svg class="logo" viewBox="0 0 40 40" aria-hidden="true"><rect width="40" height="40" rx="8" fill="var(--acc)"/><circle cx="20" cy="20" r="10" fill="none" stroke="#fff" stroke-width="2.4"/><path d="M20 8v4m0 16v4m12-12h-4m-16 0H8m20.5-8.5-2.8 2.8" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/><circle cx="20" cy="20" r="2.7" fill="#fff"/></svg>
+    <div><h1>Challenge <span>Roulette</span></h1><p class="tag">Random agent, map, guns and skins for VALORANT. Roll it, then play it.</p></div>
+  </div>
+  <div class="headright"><div><div id="status"><i></i><span>Loading game data…</span></div><div class="account-state" id="accountState">Local collection</div></div><button class="headbtn" id="historyOpen" type="button" aria-haspopup="dialog">History</button><button class="headbtn" id="accountOpen" type="button" aria-haspopup="dialog">Sign in</button></div>
+</header>
+
+<section class="panel controls" aria-label="Roll settings">
+  <div class="row">
+    <div class="grp"><span class="glbl" id="sq-l">Squad</span><div class="seg" id="squad" role="group" aria-labelledby="sq-l"></div></div>
+    <div class="grp" id="toggles"></div>
+    <div class="grp"><label class="glbl" for="budget">Budget</label>
+      <select id="budget" class="tg"><option value="0">Any</option><option value="3900">Full buy ≤ 3,900</option><option value="2000">Eco ≤ 2,000</option></select></div>
+  </div>
+  <details class="filters"><summary>Filters: roles and gun classes</summary>
+    <div class="fbody">
+      <div class="grp"><span class="glbl">Roles</span><span class="grp" id="roles"></span></div>
+      <div class="grp"><span class="glbl">Primary</span><span class="grp" id="classes"></span></div>
+    </div>
+  </details>
+  <div class="actions">
+    <button class="roll" id="roll"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.6-6.4"/><path d="M21 4v5h-5"/></svg>Roll</button>
+    <button class="btn" id="share"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 14a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1"/><path d="M14 10a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1"/></svg>Share link</button>
+    <button class="btn" id="copy"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>Copy text</button>
+    <button class="btn" id="coll"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7h18v13H3z"/><path d="M8 7V4h8v3"/></svg>My collection</button>
+  </div>
+</section>
+
+<div id="sharedNote" class="shared" hidden style="margin-top:16px"></div>
+<main class="results" id="results" aria-live="polite"></main>
+
+<p class="note">Fan-made and not affiliated with or endorsed by Riot Games. VALORANT, its agents, maps and art are trademarks and property of Riot Games. Game data and images load from the community API at valorant-api.com. Collections and recent challenges stay on this device unless you connect an account; connected-account sync uses Google or Discord and never asks for Riot credentials.</p>
+</div>
+
+<dialog id="dlg" aria-labelledby="dlg-t">
+  <div class="dh"><h2 id="dlg-t">My collection</h2><button class="x" id="dlgx" aria-label="Close">×</button></div>
+  <div class="db">
+    <p class="info">Riot doesn't let outside websites read your account inventory, so tick what you own here. Turn on <b>Owned only</b> to roll from your collection. Unowned guns roll as the standard skin.</p>
+    <div class="dtabs seg" role="tablist"><button role="tab" id="tabA" aria-pressed="true">Agents</button><button role="tab" id="tabS" aria-pressed="false">Skins</button></div>
+    <div id="paneA"></div>
+    <div id="paneS" hidden>
+      <div class="srow" id="sfil"><input class="search" style="flex:1 1 240px;margin:0" id="sq" type="search" placeholder="Search skins, e.g. Reaver, Prime, Vandal" aria-label="Search skins"><select class="wsel" id="wsel" aria-label="Filter by weapon"></select></div>
+      <div class="sgrid" id="slist"></div>
+    </div>
+  </div>
+  <div class="df"><span id="ocount"></span><button class="btn" id="dlgdone" style="min-height:44px">Done</button></div>
+</dialog>
+<dialog id="accountDlg" aria-labelledby="accountTitle">
+  <div class="dh"><h2 id="accountTitle">Your account</h2><button class="x" id="accountClose" aria-label="Close">×</button></div>
+  <div class="db">
+    <section id="signedOutView">
+      <p class="info">Sign in with Google or Discord to sync your collection and recent challenges across devices. This app never asks for your Riot password or reads Riot inventory.</p>
+      <div class="provider-stack"><button class="btn provider" id="googleSignIn" type="button">Continue with Google</button><button class="btn provider" id="discordSignIn" type="button">Continue with Discord</button></div>
+      <div class="account-box" id="authSetup">Account sync needs a Supabase project and provider setup. See <b>README.md</b> in the project files. Until then, everything works locally.</div>
+      <p class="info" id="authMessage" role="status"></p>
+    </section>
+    <section id="signedInView" hidden>
+      <div class="account-box">Signed in as <b id="accountEmail"></b><br><span class="sm">Your collection and up to 30 recent challenges sync to your account.</span></div>
+      <button class="btn" id="signOut" type="button">Sign out</button>
+      <p class="info" id="syncMessage" role="status"></p>
+    </section>
+  </div>
+  <div class="df"><span>Riot sign-in and inventory access are not used.</span><button class="btn" id="accountDone" style="min-height:44px">Done</button></div>
+</dialog>
+<dialog id="historyDlg" aria-labelledby="historyTitle">
+  <div class="dh"><h2 id="historyTitle">Recent challenges</h2><button class="x" id="historyClose" aria-label="Close">×</button></div>
+  <div class="db"><p class="info">Your last 30 manual rolls are saved here. Sign in to sync history across devices.</p><div class="hist-list" id="historyList"></div></div>
+  <div class="df"><button class="danger-link" id="clearHistory" type="button">Clear history</button><button class="btn" id="historyDone" style="min-height:44px">Done</button></div>
+</dialog>
+<div class="toast" id="toast" role="status"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
+<script>
+(()=>{
+"use strict";
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const rnd=n=>{const a=new Uint32Array(1);crypto.getRandomValues(a);return a[0]%n};
+const pick=a=>a.length?a[rnd(a.length)]:null;
+const fmt=n=>Number(n||0).toLocaleString("en-US");
+const reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;
+const API="https://valorant-api.com/v1/";
+const CACHE="vcr.data.v2",OWN="vcr.owned.v1",OPTS="vcr.opts.v1",HIST="vcr.history.v1";
+const ROLES=["Duelist","Initiator","Controller","Sentinel"];
+const CLASSES=["SMG","Shotgun","Rifle","Sniper","Heavy"];
+const STARTERS=["Brimstone","Jett","Phoenix","Sage","Sova"];
+const RULES=[
+ "Use your rolled guns every round you can afford them. No swapping to a teammate's drop.",
+ "No abilities until you get a kill that round.",
+ "Pop your ultimate the moment it's ready. No saving it.",
+ "You entry first through the door every attack round.",
+ "No crouching. At all.",
+ "Every third round is sidearm only, no matter your credits.",
+ "Buy a gun for a teammate whenever you have spare credits.",
+ "No Operator pickups, even if it's lying right there.",
+ "Call out every enemy you see out loud, even in a clutch.",
+ "Hold the spike: you plant every round on attack.",
+ "Knife out while rotating. Gun only when you reach the site.",
+ "Swap to your rolled secondary after your first death each half."
+];
+/* Offline fallback, used only if the live API can't be reached */
+const FB={
+ agents:{Duelist:["Jett","Raze","Reyna","Phoenix","Yoru","Neon","Iso","Waylay"],Controller:["Brimstone","Viper","Omen","Astra","Harbor","Clove","Miks"],Initiator:["Sova","Breach","Skye","KAY/O","Fade","Gekko","Tejo"],Sentinel:["Sage","Cypher","Killjoy","Chamber","Deadlock","Vyse","Veto"]},
+ maps:["Abyss","Ascent","Bind","Breeze","Corrode","Fracture","Haven","Icebox","Lotus","Pearl","Split","Summit","Sunset"],
+ guns:[["Stinger","SMG",1100],["Spectre","SMG",1600],["Bucky","Shotgun",850],["Judge","Shotgun",1850],["Bulldog","Rifle",2050],["Guardian","Rifle",2250],["Phantom","Rifle",2900],["Vandal","Rifle",2900],["Marshal","Sniper",950],["Outlaw","Sniper",2400],["Operator","Sniper",4700],["Ares","Heavy",1600],["Odin","Heavy",3200],["Classic","Sidearm",0],["Shorty","Sidearm",300],["Frenzy","Sidearm",450],["Ghost","Sidearm",500],["Bandit","Sidearm",600],["Sheriff","Sidearm",800],["Melee","Melee",0]]
+};
+function fallbackData(){
+  return {live:false,
+   agents:Object.entries(FB.agents).flatMap(([r,ns])=>ns.map(n=>({id:"fb-"+n,n,r}))),
+   maps:FB.maps.map(n=>({id:"fb-"+n,n,sub:"A/B Sites"})),
+   weapons:FB.guns.map(([n,c,cost])=>({id:"fb-"+n,n,c,cost,skins:[]}))};
+}
+function compact(ag,mp,wp){
+  const cat=x=>String(x||"").split("::").pop();
+  return {live:true,t:Date.now(),
+   agents:ag.filter(a=>a.isPlayableCharacter&&a.role).map(a=>({id:a.uuid,n:a.displayName,r:a.role.displayName,ri:a.role.displayIcon,ic:a.displayIcon,img:a.fullPortrait||a.bustPortrait||a.displayIcon,g:(a.backgroundGradientColors||[]).slice(0,2).map(h=>"#"+h.slice(0,6))})),
+   maps:mp.filter(m=>m.tacticalDescription&&m.splash).map(m=>({id:m.uuid,n:m.displayName,sub:m.tacticalDescription,img:m.splash})),
+   weapons:wp.map(w=>{const c=cat(w.category);return{id:w.uuid,n:w.displayName,c,cost:(w.shopData&&w.shopData.cost)||0,img:w.displayIcon,
+     skins:(w.skins||[]).filter(s=>s.displayName&&!/^(standard|random favorite)/i.test(s.displayName)&&s.displayName!=="Melee").map(s=>({id:s.uuid,n:s.displayName,img:(s.chromas&&s.chromas[0]&&s.chromas[0].fullRender)||s.displayIcon||(s.levels&&s.levels[0]&&s.levels[0].displayIcon)})).filter(s=>s.img)}})};
+}
+async function getJSON(p){const c=new AbortController(),t=setTimeout(()=>c.abort(),15000);
+  try{const r=await fetch(API+p,{signal:c.signal});if(!r.ok)throw new Error(r.status);return (await r.json()).data}finally{clearTimeout(t)}}
+
+/* ---------- state ---------- */
+const S={
+  D:null,
+  o:Object.assign({players:1,map:true,skins:true,melee:false,rule:true,owned:false,budget:0,roles:[...ROLES],classes:[...CLASSES]},load(OPTS)||{}),
+  r:null, L:{map:false,rule:false,p:[]},
+  own:load(OWN)||{agents:null,skins:[]},
+  history:load(HIST)||[],
+  busy:false
+};
+function load(k){try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}}
+function save(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+const saveOpts=()=>save(OPTS,S.o);
+const ownedAgents=()=>new Set(S.own.agents||S.D.agents.filter(a=>STARTERS.includes(a.n)).map(a=>a.id));
+const ownedSkins=()=>new Set(S.own.skins||[]);
+const W=id=>S.D.weapons.find(w=>w.id===id);
+const prim=()=>S.D.weapons.filter(w=>CLASSES.includes(w.c));
+const secs=()=>S.D.weapons.filter(w=>w.c==="Sidearm");
+const melee=()=>S.D.weapons.find(w=>w.c==="Melee");
+
+/* ---------- rolling ---------- */
+function pickSkin(w){
+  if(!w||!w.skins.length)return null;
+  let pool=w.skins;
+  if(S.o.owned){const os=ownedSkins();pool=pool.filter(s=>os.has(s.id));if(!pool.length)return null}
+  return pick(pool);
+}
+function agentPool(){
+  let p=S.D.agents.filter(a=>S.o.roles.includes(a.r)||!ROLES.includes(a.r));
+  if(S.o.owned){const oa=ownedAgents();const q=p.filter(a=>oa.has(a.id));if(q.length)p=q}
+  return p.length?p:S.D.agents;
+}
+function rollOnce(){
+  const prev=S.r||{map:null,rule:null,p:[]};
+  const r={map:prev.map,rule:prev.rule,p:[]};
+  if(!S.L.map||!r.map)r.map=pick(S.D.maps);
+  if(!S.L.rule||r.rule==null)r.rule=rnd(RULES.length);
+  const n=S.o.players;
+  while(S.L.p.length<n)S.L.p.push({a:false,pr:false,se:false,me:false});
+  const locked=new Set();for(let i=0;i<n;i++)if(S.L.p[i].a&&prev.p[i])locked.add(prev.p[i].a.id);
+  let pool=agentPool().filter(a=>!locked.has(a.id));
+  const cap=+S.o.budget||Infinity;
+  const pp=prim().filter(w=>S.o.classes.includes(w.c));const primPool=pp.length?pp:prim();
+  for(let i=0;i<n;i++){
+    const L=S.L.p[i],old=prev.p[i]||{},pl={};
+    if(L.a&&old.a)pl.a=old.a;else{if(!pool.length)pool=agentPool();pl.a=pick(pool);pool=pool.filter(a=>a.id!==pl.a.id)}
+    const seCost=L.se&&old.se?old.se.w.cost:0;
+    if(L.pr&&old.pr)pl.pr=old.pr;else{let c=primPool.filter(w=>w.cost+seCost<=cap);if(!c.length)c=primPool;const w=pick(c);pl.pr={w,s:pickSkin(w)}}
+    if(L.se&&old.se)pl.se=old.se;else{let c=secs().filter(w=>pl.pr.w.cost+w.cost<=cap);if(!c.length)c=secs().filter(w=>w.cost===0);const w=pick(c);pl.se={w,s:pickSkin(w)}}
+    if(L.me&&old.me)pl.me=old.me;else{const w=melee();pl.me=w?{w,s:pickSkin(w)}:null}
+    r.p.push(pl);
+  }
+  return r;
+}
+function roll(record=false){
+  if(S.busy||!S.D)return;
+  S.busy=true;$("#roll").disabled=true;$("#sharedNote").hidden=true;
+  history.replaceState(null,"",location.pathname+location.search);
+  const steps=reduce?1:9;let i=0;
+  const tick=()=>{
+    i++;S.r=rollOnce();render(i<steps);
+    if(i<steps)setTimeout(tick,55+i*12);else{S.busy=false;$("#roll").disabled=false;if(record)recordCurrent()}
+  };
+  if(reduce){S.r=rollOnce();render(false);S.busy=false;$("#roll").disabled=false;if(record)recordCurrent()}else tick();
+}
+
+/* ---------- render ---------- */
+const LOCK='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>';
+const UNLOCK='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 7.5-2"/></svg>';
+function lockBtn(key,on,label){return `<button class="lock" data-lock="${key}" aria-pressed="${on}" aria-label="${on?"Unlock":"Lock"} ${esc(label)}" title="${on?"Locked: stays on next roll":"Lock to keep on next roll"}">${on?LOCK:UNLOCK}</button>`}
+function img(src,alt,cls=""){return src?`<img ${cls?`class="${cls}"`:""} src="${esc(src)}" alt="${esc(alt)}" loading="lazy" decoding="async" onerror="this.remove()">`:""}
+function slotHTML(i,key,label,x){
+  if(!x)return"";
+  const sk=S.o.skins&&x.s,name=sk?x.s.n:(x.w.c==="Melee"?"Tactical Knife":x.w.n),src=sk?x.s.img:x.w.img;
+  const meta=x.w.c==="Melee"?(sk?"Knife skin":"Standard"):`${sk?"":"Standard · "}${x.w.c} · ${fmt(x.w.cost)} cr`;
+  return `<div class="slot"><div class="thumb">${src?img(src,name):`<span class="ph">${esc(x.w.n)}</span>`}</div>
+   <div><div class="sl">${label}</div><div class="sn">${esc(name)}</div><div class="sm">${esc(meta)}</div></div>
+   ${lockBtn(`p${i}.${key}`,!!S.L.p[i][key],`player ${i+1} ${label}`)}</div>`;
+}
+function render(rolling){
+  const r=S.r,o=S.o,solo=o.players===1;
+  let h="";
+  if(o.map&&r.map){
+    h+=`<section class="banner ${rolling?"rolling":""}" aria-label="Map">${img(r.map.img,"")}<div class="bi"><div><div class="kick">Map</div><div class="mapname">${esc(r.map.n)}</div><div class="mapsub">${esc(r.map.sub||"")}</div></div>${lockBtn("map",S.L.map,"map")}</div></section>`;
+  }
+  h+=`<section class="squad n${o.players} ${solo?"solo":""} ${rolling?"rolling":""}" aria-label="Loadouts">`;
+  r.p.forEach((p,i)=>{
+    const a=p.a,rc=`var(--${ROLES.includes(a.r)?a.r.toLowerCase():"other"})`;
+    const grad=a.g&&a.g.length===2?`linear-gradient(160deg,${a.g[0]} 0%,${a.g[1]} 100%)`:rc;
+    const total=p.pr.w.cost+p.se.w.cost;
+    h+=`<article class="panel pc"><div class="ag" style="background:${grad}">${img(a.img,a.n+" portrait","port")}
+      <div class="ai"><div><div class="pnum">${solo?"Your agent":"Player "+(i+1)}</div><div class="agname">${esc(a.n)}</div>
+      <div class="role">${a.ri?img(a.ri,""):""}${esc(a.r)}</div></div>${lockBtn(`p${i}.a`,!!S.L.p[i].a,`player ${i+1} agent`)}</div></div>
+      <div class="slots">${slotHTML(i,"pr","Primary",p.pr)}${slotHTML(i,"se","Secondary",p.se)}${o.melee?slotHTML(i,"me","Melee",p.me):""}
+      <div class="total"><span>Loadout cost</span><b>${fmt(total)} credits</b></div></div></article>`;
+  });
+  h+=`</section>`;
+  if(o.rule&&r.rule!=null)h+=`<section class="panel rule ${rolling?"rolling":""}" aria-label="Challenge rule"><div class="rt"><div class="kick" style="color:var(--acc)">Challenge rule</div><div class="rn">${esc(RULES[r.rule])}</div></div>${lockBtn("rule",S.L.rule,"challenge rule")}</section>`;
+  $("#results").innerHTML=h;
+}
+function controls(){
+  $("#squad").innerHTML=[1,2,3,4,5].map(n=>`<button data-n="${n}" aria-pressed="${S.o.players===n}" aria-label="${n} player${n>1?"s":""}">${n}</button>`).join("");
+  const T=[["map","Map"],["skins","Skins"],["melee","Knife"],["rule","Challenge rule"],["owned","Owned only"]];
+  $("#toggles").innerHTML=T.map(([k,l])=>`<button class="tg" data-t="${k}" aria-pressed="${!!S.o[k]}">${l}</button>`).join("");
+  $("#budget").value=String(S.o.budget||0);
+  $("#roles").innerHTML=ROLES.map(x=>`<button class="chip" data-role="${x}" aria-pressed="${S.o.roles.includes(x)}">${x}</button>`).join("");
+  $("#classes").innerHTML=CLASSES.map(x=>`<button class="chip" data-cls="${x}" aria-pressed="${S.o.classes.includes(x)}">${x==="SMG"?"SMGs":x+(x==="Heavy"?"":"s")}</button>`).join("");
+}
+
+/* ---------- events ---------- */
+$("#squad").addEventListener("click",e=>{const b=e.target.closest("[data-n]");if(!b)return;S.o.players=+b.dataset.n;saveOpts();controls();S.r&&(S.r.p=S.r.p.slice(0,S.o.players));roll()});
+$("#toggles").addEventListener("click",e=>{const b=e.target.closest("[data-t]");if(!b)return;const k=b.dataset.t;S.o[k]=!S.o[k];saveOpts();controls();
+  if(k==="owned"&&S.o.owned&&!S.own.agents&&!(S.own.skins||[]).length)toast("Starter agents only. Open My collection to add yours.");
+  if(k==="owned")roll();else if(S.r)render(false)});
+$("#budget").addEventListener("change",e=>{S.o.budget=+e.target.value;saveOpts();roll()});
+$("#roles").addEventListener("click",e=>{const b=e.target.closest("[data-role]");if(!b)return;const x=b.dataset.role,s=new Set(S.o.roles);s.has(x)?s.delete(x):s.add(x);if(!s.size)return toast("Keep at least one role.");S.o.roles=ROLES.filter(r=>s.has(r));saveOpts();controls();roll()});
+$("#classes").addEventListener("click",e=>{const b=e.target.closest("[data-cls]");if(!b)return;const x=b.dataset.cls,s=new Set(S.o.classes);s.has(x)?s.delete(x):s.add(x);if(!s.size)return toast("Keep at least one gun class.");S.o.classes=CLASSES.filter(r=>s.has(r));saveOpts();controls();roll()});
+$("#results").addEventListener("click",e=>{const b=e.target.closest("[data-lock]");if(!b||S.busy)return;const k=b.dataset.lock;
+  if(k==="map")S.L.map=!S.L.map;else if(k==="rule")S.L.rule=!S.L.rule;else{const [p,f]=k.split(".");const L=S.L.p[+p.slice(1)];L[f]=!L[f]}
+  render(false);const nb=document.querySelector(`[data-lock="${k}"]`);nb&&nb.focus()});
+$("#roll").addEventListener("click",()=>roll(true));
+document.addEventListener("keydown",e=>{if(e.code==="Space"&&e.target===document.body){e.preventDefault();roll()}});
+function toast(m){const t=$("#toast");t.textContent=m;t.classList.add("on");clearTimeout(toast.h);toast.h=setTimeout(()=>t.classList.remove("on"),2200)}
+function asText(){const r=S.r,o=S.o;if(!r)return"";const L=[];
+  if(o.map)L.push("Map: "+r.map.n);
+  r.p.forEach((p,i)=>{const g=x=>x?(o.skins&&x.s?x.s.n:x.w.n):"";L.push(`${o.players>1?"P"+(i+1)+" ":""}${p.a.n} (${p.a.r}): ${g(p.pr)} + ${g(p.se)}${o.melee&&p.me?" + "+(o.skins&&p.me.s?p.me.s.n:"Tactical Knife"):""}`)});
+  if(o.rule)L.push("Rule: "+RULES[r.rule]);return L.join("\n")}
+async function copy(txt,msg){try{await navigator.clipboard.writeText(txt);toast(msg)}catch(e){prompt("Copy this:",txt)}}
+$("#copy").addEventListener("click",()=>copy(asText(),"Loadout copied"));
+/* share links: short uuid prefixes in the URL hash */
+const sid=x=>x?x.id.slice(0,8):"";
+function encode(){const r=S.r,o=S.o;const s=[o.map?sid(r.map):"",o.rule?r.rule:"",o.skins?1:0,o.melee?1:0,
+  r.p.map(p=>[sid(p.a),sid(p.pr.w),sid(p.pr.s),sid(p.se.w),sid(p.se.s),sid(p.me&&p.me.s)].join(".")).join("~")].join("_");return s}
+function decode(h){try{
+  const [m,ru,sk,me,ps]=h.split("_");const f=(arr,k)=>k?arr.find(x=>x.id.startsWith(k))||null:null;
+  const p=ps.split("~").map(q=>{const [a,pw,psk,sw,ssk,msk]=q.split(".");const P=f(S.D.weapons,pw),Sw=f(S.D.weapons,sw),M=melee();
+    return {a:f(S.D.agents,a),pr:{w:P,s:P?f(P.skins,psk):null},se:{w:Sw,s:Sw?f(Sw.skins,ssk):null},me:M?{w:M,s:f(M.skins,msk)}:null}});
+  if(!p.length||p.some(x=>!x.a||!x.pr.w||!x.se.w))return false;
+  S.o.map=!!m;S.o.rule=ru!=="";S.o.skins=sk==="1";S.o.melee=me==="1";S.o.players=p.length;
+  S.r={map:f(S.D.maps,m)||pick(S.D.maps),rule:ru===""?null:+ru%RULES.length,p};
+  S.L={map:false,rule:false,p:p.map(()=>({a:false,pr:false,se:false,me:false}))};
+  return true}catch(e){return false}}
+$("#share").addEventListener("click",()=>{if(!S.r)return;const url=location.href.split("#")[0]+"#c="+encode();history.replaceState(null,"","#c="+encode());copy(url,"Challenge link copied. Send it to your squad.")});
+function recordCurrent(){if(!S.r)return;const code=encode();S.history=[{code,text:asText(),created:new Date().toISOString()},...S.history.filter(x=>x.code!==code)].slice(0,30);save(HIST,S.history);renderHistory();scheduleCloudWrite()}
+function renderHistory(){const box=$("#historyList");if(!box)return;if(!S.history.length){box.innerHTML='<div class="empty-state">No saved challenges yet. Tap Roll to save your first one.</div>';return}
+ box.innerHTML=S.history.map((item,i)=>{const when=new Date(item.created);const date=Number.isNaN(when.getTime())?"Saved challenge":when.toLocaleString();const title=(item.text||"Challenge").split("\n")[0]||"Challenge";return `<article class="hist-item"><div class="hist-copy"><div class="hist-title">${esc(title)}</div><div class="sm">${esc(date)}</div></div><div class="hist-actions"><button class="btn" data-hcopy="${i}" type="button">Copy</button><button class="btn" data-hload="${i}" type="button">Load</button></div></article>`}).join("")}
+const historyDlg=$("#historyDlg");
+$("#historyOpen").addEventListener("click",()=>{renderHistory();historyDlg.showModal()});
+$("#historyClose").onclick=$("#historyDone").onclick=()=>historyDlg.close();
+$("#clearHistory").addEventListener("click",()=>{S.history=[];save(HIST,S.history);renderHistory();scheduleCloudWrite()});
+$("#historyList").addEventListener("click",e=>{const cp=e.target.closest("[data-hcopy]");if(cp){const item=S.history[+cp.dataset.hcopy];if(item)copy(item.text,"Challenge copied");return}const ld=e.target.closest("[data-hload]");if(!ld)return;const item=S.history[+ld.dataset.hload];if(item&&decode(item.code)){controls();render(false);history.replaceState(null,"","#c="+item.code);$("#sharedNote").hidden=true;historyDlg.close();toast("Challenge restored")}});
+
+/* ---------- collection dialog ---------- */
+const dlg=$("#dlg");let sFilter="All";
+function ownCount(){const oa=ownedAgents(),os=ownedSkins();$("#ocount").textContent=`${oa.size} agents · ${os.size} skins owned`}
+function paneA(){const oa=ownedAgents();
+  $("#paneA").innerHTML=`<div class="srow"><button class="chip" data-aall="1">Select all</button><button class="chip" data-aall="0">Starters only</button></div><div class="agrid">`+
+   S.D.agents.slice().sort((a,b)=>a.n.localeCompare(b.n)).map(a=>`<button class="own" data-oa="${a.id}" aria-pressed="${oa.has(a.id)}">${a.ic?img(a.ic,""):""}<span>${esc(a.n)}</span></button>`).join("")+`</div>`;ownCount()}
+function paneS(){const os=ownedSkins(),q=$("#sq").value.trim().toLowerCase();
+  const ws=S.D.weapons.filter(w=>w.skins.length);
+  const sel=$("#wsel");if(!sel.options.length){sel.innerHTML=[["All","All weapons"],["Owned","Owned skins"],...ws.map(w=>[w.n,w.n==="Melee"?"Knives":w.n])].map(([v,l])=>`<option value="${esc(v)}">${esc(l)}</option>`).join("")}sel.value=sFilter;
+  let list=ws.flatMap(w=>w.skins.map(s=>({...s,w:w.n})));
+  if(sFilter==="Owned")list=list.filter(s=>os.has(s.id));else if(sFilter!=="All")list=list.filter(s=>s.w===sFilter);
+  if(q)list=list.filter(s=>s.n.toLowerCase().includes(q));
+  const total=list.length;list=list.slice(0,90);
+  $("#slist").innerHTML=list.map(s=>`<button class="own" data-os="${s.id}" aria-pressed="${os.has(s.id)}">${img(s.img,"")}<span>${esc(s.n)}</span></button>`).join("")+
+   (total>90?`<p class="info" style="grid-column:1/-1;margin-top:8px">Showing 90 of ${total}. Search or pick a weapon to narrow it down.</p>`:"")+(total?"":`<p class="info" style="grid-column:1/-1">No skins match.</p>`);ownCount()}
+$("#coll").addEventListener("click",()=>{if(!S.D)return;if(!S.D.live)return toast("Collection needs live game data. Check your connection.");paneA();paneS();dlg.showModal()});
+$("#dlgx").onclick=$("#dlgdone").onclick=()=>dlg.close();
+dlg.addEventListener("close",()=>{if(S.o.owned)roll()});
+$("#tabA").onclick=()=>{$("#tabA").setAttribute("aria-pressed","true");$("#tabS").setAttribute("aria-pressed","false");$("#paneA").hidden=false;$("#paneS").hidden=true};
+$("#tabS").onclick=()=>{$("#tabS").setAttribute("aria-pressed","true");$("#tabA").setAttribute("aria-pressed","false");$("#paneA").hidden=true;$("#paneS").hidden=false;$("#sq").focus()};
+$("#paneA").addEventListener("click",e=>{const all=e.target.closest("[data-aall]");
+  if(all){S.own.agents=all.dataset.aall==="1"?S.D.agents.map(a=>a.id):S.D.agents.filter(a=>STARTERS.includes(a.n)).map(a=>a.id);persistCollection();return paneA()}
+  const b=e.target.closest("[data-oa]");if(!b)return;const s=ownedAgents();s.has(b.dataset.oa)?s.delete(b.dataset.oa):s.add(b.dataset.oa);S.own.agents=[...s];persistCollection();b.setAttribute("aria-pressed",s.has(b.dataset.oa));ownCount()});
+$("#wsel").addEventListener("change",e=>{sFilter=e.target.value;paneS()});
+$("#paneS").addEventListener("click",e=>{
+  const b=e.target.closest("[data-os]");if(!b)return;const s=ownedSkins();s.has(b.dataset.os)?s.delete(b.dataset.os):s.add(b.dataset.os);S.own.skins=[...s];persistCollection();b.setAttribute("aria-pressed",s.has(b.dataset.os));ownCount()});
+let sqT;$("#sq").addEventListener("input",()=>{clearTimeout(sqT);sqT=setTimeout(paneS,120)});
+
+/* ---------- optional account sync ---------- */
+const accountDlg=$("#accountDlg");let cloud=null,session=null,authUserId=null,cloudLoading=false,cloudTimer=null;
+function renderAccount(){const signed=!!session;$("#signedOutView").hidden=signed;$("#signedInView").hidden=!signed;$("#accountOpen").textContent=signed?"Account":"Sign in";$("#accountState").textContent=!cloud?"Local collection":signed?`Synced account · ${session.user.email||"signed in"}`:"Local collection";$("#googleSignIn").disabled=$("#discordSignIn").disabled=!cloud;$("#authSetup").hidden=!!cloud;if(signed)$("#accountEmail").textContent=session.user.email||"Signed in"}
+function persistCollection(){save(OWN,S.own);scheduleCloudWrite()}
+function scheduleCloudWrite(){if(!cloud||!session||cloudLoading)return;clearTimeout(cloudTimer);cloudTimer=setTimeout(writeCloud,700)}
+async function writeCloud(){if(!cloud||!session||cloudLoading)return;$("#syncMessage").textContent="Saving…";const userId=session.user.id;const {error}=await cloud.from("player_data").upsert({user_id:userId,collection:S.own,history:S.history,updated_at:new Date().toISOString()},{onConflict:"user_id"});if(error){$("#syncMessage").textContent="Sync unavailable; your changes are still saved on this device.";$("#accountState").textContent="Saved locally · sync issue";console.error("Account sync failed",error)}else{$("#syncMessage").textContent="Collection and challenge history are synced.";$("#accountState").textContent=`Synced account · ${session.user.email||"signed in"}`}}
+async function loadCloud(){if(!cloud||!session||cloudLoading)return;cloudLoading=true;const userId=session.user.id;$("#syncMessage").textContent="Loading your saved collection…";try{const {data,error}=await cloud.from("player_data").select("collection,history").eq("user_id",userId).maybeSingle();if(error)throw error;if(data){S.own=data.collection&&typeof data.collection==="object"?data.collection:{agents:null,skins:[]};S.history=Array.isArray(data.history)?data.history.slice(0,30):[];save(OWN,S.own);save(HIST,S.history);$("#syncMessage").textContent="Collection and challenge history synced."}else{const {error:writeError}=await cloud.from("player_data").insert({user_id:userId,collection:S.own,history:S.history,updated_at:new Date().toISOString()});if(writeError)throw writeError;$("#syncMessage").textContent="This device’s collection and history were saved to your account."}if(S.D&&dlg.open){paneA();paneS()}renderHistory();$("#accountState").textContent=`Synced account · ${session.user.email||"signed in"}`}catch(e){console.error("Could not load account data",e);$("#syncMessage").textContent="Could not sync yet; your local data is untouched. Check the setup steps and try again.";$("#accountState").textContent="Saved locally · sync issue"}finally{cloudLoading=false}}
+function acceptSession(next){const id=next?.user?.id||null;const changed=id!==authUserId;session=next;authUserId=id;renderAccount();if(changed&&session)setTimeout(loadCloud,0)}
+async function beginOAuth(provider){if(!cloud){$("#authMessage").textContent="Finish the Supabase setup in README.md first.";return}$("#authMessage").textContent="Opening secure sign-in…";const {error}=await cloud.auth.signInWithOAuth({provider,options:{redirectTo:location.href.split("#")[0]}});if(error)$("#authMessage").textContent=`Sign-in could not start: ${error.message}`}
+$("#accountOpen").addEventListener("click",()=>{renderAccount();accountDlg.showModal()});
+$("#accountClose").onclick=$("#accountDone").onclick=()=>accountDlg.close();
+$("#googleSignIn").addEventListener("click",()=>beginOAuth("google"));
+$("#discordSignIn").addEventListener("click",()=>beginOAuth("discord"));
+$("#signOut").addEventListener("click",async()=>{if(!cloud)return;const {error}=await cloud.auth.signOut();if(error)$("#syncMessage").textContent="Sign-out failed. Please try again.";else{$("#syncMessage").textContent="Signed out. This device’s saved data remains available here.";toast("Signed out")}});
+async function initCloud(){renderAccount();const cfg=window.VCR_CONFIG||{};if(!window.supabase?.createClient||!cfg.supabaseUrl||!cfg.supabaseAnonKey)return;try{cloud=window.supabase.createClient(cfg.supabaseUrl,cfg.supabaseAnonKey);const {data,error}=await cloud.auth.getSession();if(error)throw error;acceptSession(data.session);cloud.auth.onAuthStateChange((_event,next)=>acceptSession(next));renderAccount()}catch(e){cloud=null;renderAccount();console.error("Account setup could not start",e)}}
+
+/* ---------- boot ---------- */
+initCloud();
+function setStatus(live,txt){$("#status").className=live?"live":"";$("#status span").textContent=txt}
+function start(D,first){
+  S.D=D;
+  const nSk=D.weapons.reduce((n,w)=>n+w.skins.length,0);
+  setStatus(D.live,D.live?`Live data · ${D.agents.length} agents · ${D.maps.length} maps · ${fmt(nSk)} skins`:"Offline mode · names only, no art");
+  if(!first)return;
+  controls();
+  const m=location.hash.match(/^#c=(.+)$/);
+  if(m&&D.live&&decode(m[1])){controls();render(false);$("#sharedNote").hidden=false;$("#sharedNote").textContent="You've been challenged. This is the loadout your friend rolled. Hit Roll for your own."}
+  else roll();
+}
+(async()=>{
+  const c=load(CACHE);let started=false;
+  if(c&&c.live&&c.agents&&c.agents.length){start(c,true);started=true;if(Date.now()-c.t<12*3600e3)return}
+  try{
+    const [ag,mp,wp]=await Promise.all([getJSON("agents?isPlayableCharacter=true"),getJSON("maps"),getJSON("weapons")]);
+    const D=compact(ag,mp,wp);if(!D.agents.length||!D.weapons.length)throw new Error("empty");
+    save(CACHE,D);
+    if(started){S.D=D;start(D,false)}else start(D,true);
+  }catch(e){if(!started)start(fallbackData(),true)}
+})();
+})();
+</script>
+</body>
+</html>
