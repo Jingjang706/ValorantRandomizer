@@ -313,9 +313,9 @@ function pickSkin(w){
   return pick(pool);
 }
 function agentPool(){
-  let p=S.D.agents.filter(a=>S.o.roles.includes(a.r)||!ROLES.includes(a.r));
-  if(S.o.owned){const oa=ownedAgents();const q=p.filter(a=>oa.has(a.id));if(q.length)p=q}
-  return p.length?p:S.D.agents;
+  const p=S.D.agents.filter(a=>S.o.roles.includes(a.r)||!ROLES.includes(a.r));
+  if(S.o.owned){const oa=ownedAgents();return p.filter(a=>oa.has(a.id))}
+  return p;
 }
 function rollOnce(){
   const prev=S.r||{map:null,rule:null,p:[]};
@@ -341,6 +341,10 @@ function rollOnce(){
 }
 function roll(record=false){
   if(S.busy||!S.D)return;
+  if(S.o.owned&&!agentPool().length){
+    toast("No owned agents match the selected roles. Update My collection or your role filters.");
+    return;
+  }
   S.busy=true;$("#roll").disabled=true;$("#sharedNote").hidden=true;
   history.replaceState(null,"",location.pathname+location.search);
   const steps=reduce?1:9;let i=0;
@@ -419,12 +423,22 @@ const sid=x=>x?x.id.slice(0,8):"";
 function encode(){const r=S.r,o=S.o;const s=[o.map?sid(r.map):"",o.rule?r.rule:"",o.skins?1:0,o.melee?1:0,
   r.p.map(p=>[sid(p.a),sid(p.pr.w),sid(p.pr.s),sid(p.se.w),sid(p.se.s),sid(p.me&&p.me.s)].join(".")).join("~")].join("_");return s}
 function decode(h){try{
-  const [m,ru,sk,me,ps]=h.split("_");const f=(arr,k)=>k?arr.find(x=>x.id.startsWith(k))||null:null;
-  const p=ps.split("~").map(q=>{const [a,pw,psk,sw,ssk,msk]=q.split(".");const P=f(S.D.weapons,pw),Sw=f(S.D.weapons,sw),M=melee();
-    return {a:f(S.D.agents,a),pr:{w:P,s:P?f(P.skins,psk):null},se:{w:Sw,s:Sw?f(Sw.skins,ssk):null},me:M?{w:M,s:f(M.skins,msk)}:null}});
-  if(!p.length||p.some(x=>!x.a||!x.pr.w||!x.se.w))return false;
+  const parts=String(h||"").split("_");if(parts.length!==5)return false;
+  const [m,ru,sk,me,ps]=parts;
+  if(!["0","1"].includes(sk)||!["0","1"].includes(me))return false;
+  if(ru!==""&&(!/^\\d+$/.test(ru)||+ru>=RULES.length))return false;
+  const f=(arr,k)=>{if(!k)return null;const matches=arr.filter(x=>String(x.id).startsWith(k));return matches.length===1?matches[0]:null};
+  const playerCodes=ps?ps.split("~"):[];
+  if(!playerCodes.length||playerCodes.length>5)return false;
+  const p=playerCodes.map(q=>{
+    const fields=q.split(".");if(fields.length!==6)throw new Error("Invalid player payload");
+    const [a,pw,psk,sw,ssk,msk]=fields,P=f(S.D.weapons,pw),Sw=f(S.D.weapons,sw),M=melee();
+    return {a:f(S.D.agents,a),pr:{w:P,s:P?f(P.skins,psk):null},se:{w:Sw,s:Sw?f(Sw.skins,ssk):null},me:M?{w:M,s:f(M.skins,msk)}:null};
+  });
+  if(p.some(x=>!x.a||!x.pr.w||!x.se.w))return false;
+  const map=m?f(S.D.maps,m):null;if(m&&!map)return false;
   S.o.map=!!m;S.o.rule=ru!=="";S.o.skins=sk==="1";S.o.melee=me==="1";S.o.players=p.length;
-  S.r={map:f(S.D.maps,m)||pick(S.D.maps),rule:ru===""?null:+ru%RULES.length,p};
+  S.r={map:map||pick(S.D.maps),rule:ru===""?null:+ru,p};
   S.L={map:false,rule:false,p:p.map(()=>({a:false,pr:false,se:false,me:false}))};
   return true}catch(e){return false}}
 $("#share").addEventListener("click",()=>{if(!S.r)return;const url=location.href.split("#")[0]+"#c="+encode();history.replaceState(null,"","#c="+encode());copy(url,"Challenge link copied. Send it to your squad.")});
