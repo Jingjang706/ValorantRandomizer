@@ -332,7 +332,7 @@ function rollOnce(){
     const L=S.L.p[i],old=prev.p[i]||{},pl={};
     if(L.a&&old.a)pl.a=old.a;else{if(!pool.length)pool=agentPool();pl.a=pick(pool);pool=pool.filter(a=>a.id!==pl.a.id)}
     const seCost=L.se&&old.se?old.se.w.cost:0;
-    if(L.pr&&old.pr)pl.pr=old.pr;else{let c=primPool.filter(w=>w.cost+seCost<=cap);if(!c.length)c=primPool;const w=pick(c);pl.pr={w,s:pickSkin(w)}}
+    if(L.pr&&old.pr)pl.pr=old.pr;else{let c=primPool.filter(w=>w.cost+seCost<=cap);if(!c.length)c=primPool.filter(w=>w.cost<=cap);const w=pick(c.length?c:primPool);pl.pr={w,s:pickSkin(w)}}
     if(L.se&&old.se)pl.se=old.se;else{let c=secs().filter(w=>pl.pr.w.cost+w.cost<=cap);if(!c.length)c=secs().filter(w=>w.cost===0);const w=pick(c);pl.se={w,s:pickSkin(w)}}
     if(L.me&&old.me)pl.me=old.me;else{const w=melee();pl.me=w?{w,s:pickSkin(w)}:null}
     r.p.push(pl);
