@@ -426,7 +426,7 @@ function decode(h){try{
   const parts=String(h||"").split("_");if(parts.length!==5)return false;
   const [m,ru,sk,me,ps]=parts;
   if(!["0","1"].includes(sk)||!["0","1"].includes(me))return false;
-  if(ru!==""&&(!/^\\d+$/.test(ru)||+ru>=RULES.length))return false;
+  if(ru!==""&&(!/^\d+$/.test(ru)||+ru>=RULES.length))return false;
   const f=(arr,k)=>{if(!k)return null;const matches=arr.filter(x=>String(x.id).startsWith(k));return matches.length===1?matches[0]:null};
   const playerCodes=ps?ps.split("~"):[];
   if(!playerCodes.length||playerCodes.length>5)return false;
