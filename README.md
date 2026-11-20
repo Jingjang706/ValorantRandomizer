@@ -11,7 +11,7 @@ The app works without an account. Serve this folder with any static web server (
 Account sync stores a player’s manually selected collection and recent challenge history. It does **not** connect to Riot, read inventory, or request Riot credentials.
 
 1. Create a Supabase project.
-2. In its SQL Editor, run [`supabase/schema.sql`](supabase/schema.sql). Row Level Security restricts each row to its owner.
+2. In its SQL Editor, run [`schema.sql`](schema.sql) from the repository root. Row Level Security restricts each row to its owner.
 3. In Supabase Authentication, enable Google and/or Discord. Create OAuth credentials in the provider’s developer console, paste the client ID/secret into Supabase (not this app), and add Supabase’s displayed callback URL (`https://<project-ref>.supabase.co/auth/v1/callback`) to the provider’s allowed redirect/callback URLs.
 4. In Supabase **Authentication → URL Configuration**, set the deployed site URL as the Site URL. Add the exact local test URL and production URL to the allowed Redirect URLs.
 5. Copy the Supabase Project URL and the browser-safe anon/publishable key into `config.js`:
