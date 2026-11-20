@@ -142,7 +142,7 @@ dialog::backdrop{background:rgba(0,0,0,.55)}
 .sgrid .own img{width:100%;height:48px}
 .search{width:100%;min-height:44px;border:1px solid var(--line);border-radius:8px;background:var(--bg);padding:0 12px;margin-bottom:12px}
 .srow{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
-.provider-stack{display:grid;gap:10px}.provider{min-height:48px;width:100%;justify-content:center}.provider:disabled{opacity:.55;cursor:not-allowed;background:var(--soft);color:var(--muted)}.account-box{padding:14px;border:1px solid var(--line);border-radius:8px;background:var(--soft);margin:12px 0}.hist-list{display:grid;gap:10px}.hist-item{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:12px;border:1px solid var(--line);border-radius:8px;background:var(--surface)}.hist-copy{min-width:0}.hist-title{font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.hist-actions{display:flex;gap:8px;flex:none}.hist-actions .btn{min-height:40px;padding:0 12px}.empty-state{padding:28px 16px;border:1px dashed var(--line);border-radius:8px;text-align:center;color:var(--muted)}.danger-link{border:0;background:none;color:var(--acc);font-weight:650;padding:8px 0}
+.provider-stack{display:grid;gap:10px}.provider-stack[hidden]{display:none}.provider{min-height:48px;width:100%;justify-content:center}.provider:disabled{opacity:.55;cursor:not-allowed;background:var(--soft);color:var(--muted)}.account-box{padding:14px;border:1px solid var(--line);border-radius:8px;background:var(--soft);margin:12px 0}.hist-list{display:grid;gap:10px}.hist-item{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:12px;border:1px solid var(--line);border-radius:8px;background:var(--surface)}.hist-copy{min-width:0}.hist-title{font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.hist-actions{display:flex;gap:8px;flex:none}.hist-actions .btn{min-height:40px;padding:0 12px}.empty-state{padding:28px 16px;border:1px dashed var(--line);border-radius:8px;text-align:center;color:var(--muted)}.danger-link{border:0;background:none;color:var(--acc);font-weight:650;padding:8px 0}
 
 @media (max-width:760px){
   .headright{width:100%;justify-content:space-between}.account-state{text-align:left}.hist-item{align-items:flex-start;flex-direction:column}.hist-actions{width:100%}.hist-actions .btn{flex:1}
@@ -213,9 +213,9 @@ dialog::backdrop{background:rgba(0,0,0,.55)}
   <div class="dh"><h2 id="accountTitle">Your account</h2><button class="x" id="accountClose" aria-label="Close">×</button></div>
   <div class="db">
     <section id="signedOutView">
-      <p class="info">Sign in with Google or Discord to sync your collection and recent challenges across devices. This app never asks for your Riot password or reads Riot inventory.</p>
-      <div class="provider-stack"><button class="btn provider" id="googleSignIn" type="button">Continue with Google</button><button class="btn provider" id="discordSignIn" type="button">Continue with Discord</button></div>
-      <div class="account-box" id="authSetup">Account sync needs a Supabase project and provider setup. See <b>README.md</b> in the project files. Until then, everything works locally.</div>
+      <p class="info">Keep using the randomizer, collection, and challenge history locally. Optional account sync can be enabled later with Google or Discord; this app never asks for your Riot password or reads Riot inventory.</p>
+      <div class="provider-stack" id="providerStack" hidden><button class="btn provider" id="googleSignIn" type="button">Continue with Google</button><button class="btn provider" id="discordSignIn" type="button">Continue with Discord</button></div>
+      <div class="account-box" id="authSetup">Local mode is ready. Your collection and recent challenges are saved on this device; no account or external setup is required. Cross-device sync is optional and isn&apos;t connected in this project.</div>
       <p class="info" id="authMessage" role="status"></p>
     </section>
     <section id="signedInView" hidden>
@@ -467,7 +467,7 @@ let sqT;$("#sq").addEventListener("input",()=>{clearTimeout(sqT);sqT=setTimeout(
 
 /* ---------- optional account sync ---------- */
 const accountDlg=$("#accountDlg");let cloud=null,session=null,authUserId=null,cloudLoading=false,cloudTimer=null;
-function renderAccount(){const signed=!!session;$("#signedOutView").hidden=signed;$("#signedInView").hidden=!signed;$("#accountOpen").textContent=signed?"Account":"Sign in";$("#accountState").textContent=!cloud?"Local collection":signed?`Synced account · ${session.user.email||"signed in"}`:"Local collection";$("#googleSignIn").disabled=$("#discordSignIn").disabled=!cloud;$("#authSetup").hidden=!!cloud;if(signed)$("#accountEmail").textContent=session.user.email||"Signed in"}
+function renderAccount(){const signed=!!session;$("#signedOutView").hidden=signed;$("#signedInView").hidden=!signed;$("#accountOpen").textContent=signed?"Account":"Sign in";$("#accountState").textContent=!cloud?"Saved on this device":signed?`Synced account · ${session.user.email||"signed in"}`:"Saved on this device";$("#providerStack").hidden=!cloud;$("#authSetup").hidden=!!cloud;if(signed)$("#accountEmail").textContent=session.user.email||"Signed in"}
 function persistCollection(){save(OWN,S.own);scheduleCloudWrite()}
 function scheduleCloudWrite(){if(!cloud||!session||cloudLoading)return;clearTimeout(cloudTimer);cloudTimer=setTimeout(writeCloud,700)}
 async function writeCloud(){if(!cloud||!session||cloudLoading)return;$("#syncMessage").textContent="Saving…";const userId=session.user.id;const {error}=await cloud.from("player_data").upsert({user_id:userId,collection:S.own,history:S.history,updated_at:new Date().toISOString()},{onConflict:"user_id"});if(error){$("#syncMessage").textContent="Sync unavailable; your changes are still saved on this device.";$("#accountState").textContent="Saved locally · sync issue";console.error("Account sync failed",error)}else{$("#syncMessage").textContent="Collection and challenge history are synced.";$("#accountState").textContent=`Synced account · ${session.user.email||"signed in"}`}}
