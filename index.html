@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>VALORANT Challenge Roulette</title>
-<meta name="description" content="Roll a random VALORANT agent, map, guns and skins. Challenge your squad.">
+<meta name="description" content="Build a VALORANT squad challenge: random agents, maps, weapons, skins and rules. Share your roll and play with friends.">\n<meta name="theme-color" content="#0F1218">\n<meta name="application-name" content="Challenge Roulette">\n<meta name="apple-mobile-web-app-capable" content="yes">\n<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">\n<link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <style>
 :root{
@@ -520,5 +520,5 @@ function start(D,first){
 })();
 })();
 </script>
-</body>
+<script>\nif ("serviceWorker" in navigator && location.protocol === "https:") {\n  window.addEventListener("load", () => navigator.serviceWorker.register("/sw.js").catch(() => {}));\n}\n</script>\n</body>
 </html>
