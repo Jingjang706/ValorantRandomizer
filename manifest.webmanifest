@@ -1,0 +1,19 @@
+{
+  "name": "VALORANT Challenge Roulette",
+  "short_name": "Challenge Roulette",
+  "description": "Roll VALORANT agents, maps, weapons and squad challenges.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#0F1218",
+  "theme_color": "#FF4655",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
